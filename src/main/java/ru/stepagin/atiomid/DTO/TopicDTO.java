@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class TopicDTO {
     private String id;
-    private String name;
+    private String topicName;
     private String created;
     private List<MessageDTO> messages;
 }
