@@ -19,11 +19,11 @@ public class PostEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", columnDefinition = "UUID")
     private UUID id;
-    @Column(name = "topic_id", columnDefinition = "UUID")
-    private UUID topicId;
-    @Column(name = "message_id", columnDefinition = "UUID")
-    private UUID messageId;
-    @Column(name = "person_id", columnDefinition = "UUID")
-    private UUID personId;
+    @ManyToOne(optional = false)
+    private TopicEntity topic;
+    @ManyToOne(optional = false)
+    private MessageEntity message;
+    @ManyToOne(optional = false)
+    private PersonEntity person;
 
 }

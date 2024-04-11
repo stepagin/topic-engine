@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.stepagin.atiomid.entity.TopicEntity;
 
 import java.util.List;
 
@@ -16,4 +17,13 @@ public class TopicDTO {
     private String topicName;
     private String created;
     private List<MessageDTO> messages;
+
+    public TopicDTO(TopicEntity topicEntity, List<MessageDTO> messages) {
+        this(
+                topicEntity.getId().toString(),
+                topicEntity.getName(),
+                topicEntity.getCreatedDate().toString(),
+                messages
+        );
+    }
 }

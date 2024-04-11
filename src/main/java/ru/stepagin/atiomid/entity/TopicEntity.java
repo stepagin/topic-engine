@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -22,6 +23,7 @@ public class TopicEntity {
     private UUID id;
     @Column(name = "name", nullable = false)
     private String name;
+    @CreationTimestamp
     @Column(name = "created", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime createdDate;
 }

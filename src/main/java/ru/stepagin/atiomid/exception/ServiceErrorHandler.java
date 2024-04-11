@@ -34,6 +34,12 @@ public class ServiceErrorHandler {
         return ResponseEntity.notFound().build();
     }
 
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<String> handleException(final UnsupportedOperationException e) {
+        log.error("UnsupportedOperationException: {}", e.getMessage());
+        return ResponseEntity.internalServerError().body(e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(final Exception e) {
         log.error("Common Exception: {}", e.getMessage());
