@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
@@ -25,5 +26,9 @@ public class TopicEntity {
     private String name;
     @CreationTimestamp
     @Column(name = "created", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private OffsetDateTime createdDate;
+    private OffsetDateTime createdDate = (OffsetDateTime.now(ZoneId.of("Europe/Moscow")));
+
+    public TopicEntity(String name) {
+        this.name = name;
+    }
 }

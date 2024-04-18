@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.stepagin.atiomid.entity.MessageEntity;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -16,4 +17,7 @@ public interface MessageRepo extends JpaRepository<MessageEntity, UUID> {
     @Transactional
     @Query("update MessageEntity m set m.text=:text where m.id=:id")
     void updateTextById(@Param("id") UUID id, @Param("text") String text);
+
+    @Query("select m from MessageEntity m where m.topic.id=:id")
+    List<MessageEntity> findAllByTopic(@Param("id") UUID topicId);
 }

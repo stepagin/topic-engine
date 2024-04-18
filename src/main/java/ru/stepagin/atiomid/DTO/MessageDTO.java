@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.stepagin.atiomid.entity.MessageEntity;
-import ru.stepagin.atiomid.entity.PostEntity;
 
 @Getter
 @Setter
@@ -21,17 +20,13 @@ public class MessageDTO {
     private String created;
 
 
-    public MessageDTO(MessageEntity messageEntity, String author) {
-        this(messageEntity.getId().toString(), messageEntity.getText(), author, messageEntity.getCreatedDate().toString());
-    }
-
-    public MessageDTO(PostEntity postEntity) {
+    public MessageDTO(MessageEntity messageEntity) {
         this(
-                postEntity.getMessage().getId().toString(),
-                postEntity.getMessage().getText(),
-                postEntity.getPerson().getName(),
-                postEntity.getMessage().getCreatedDate().toString()
+                messageEntity.getId().toString(),
+                messageEntity.getText(),
+                messageEntity.getPerson().getName(),
+                messageEntity.getCreatedDate().toString()
         );
-
     }
+
 }

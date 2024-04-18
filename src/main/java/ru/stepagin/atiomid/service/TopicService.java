@@ -8,15 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.stepagin.atiomid.DTO.*;
 import ru.stepagin.atiomid.entity.MessageEntity;
 import ru.stepagin.atiomid.entity.PersonEntity;
-import ru.stepagin.atiomid.entity.PostEntity;
 import ru.stepagin.atiomid.entity.TopicEntity;
 import ru.stepagin.atiomid.exception.InvalidIdSuppliedException;
 import ru.stepagin.atiomid.exception.TopicNotFoundException;
 import ru.stepagin.atiomid.exception.ValidationException;
 import ru.stepagin.atiomid.repository.TopicRepo;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,8 +23,6 @@ public class TopicService {
     private TopicRepo topicRepo;
     @Autowired
     private PersonService personService;
-    @Autowired
-    private PostService postService;
     @Autowired
     private MessageService messageService;
 
@@ -43,22 +38,24 @@ public class TopicService {
             throw new InvalidIdSuppliedException("Person not found");
         }
         if (createTopicDTO.getTopicName().length() < 2) {
-            throw new ValidationException("Topic name too short");
+            throw new ValidationException("Topic name is too short");
         }
         if (createTopicDTO.getTopicName().length() > 256) {
-            throw new ValidationException("Topic name too long");
+            throw new ValidationException("Topic name is too long");
         }
-
-        MessageEntity messageEntity = messageService.save(createTopicDTO.getMessage().getText());
 
         TopicEntity topicEntity = new TopicEntity();
         topicEntity.setName(createTopicDTO.getTopicName());
-        topicEntity.setCreatedDate(OffsetDateTime.now(ZoneId.of("Europe/Moscow")));
         topicEntity = topicRepo.save(topicEntity);
 
-        postService.savePost(topicEntity, messageEntity, personEntity);
+        // TODO: person name by Spring HTTP Basic auth
+        MessageEntity messageEntity = messageService.save(
+                createTopicDTO.getMessage().getText(),
+                new PersonEntity("mock person"),
+                topicEntity
+        );
 
-        return new TopicDTO(topicEntity, List.of(new MessageDTO(messageEntity, personEntity.getName())));
+        return new TopicDTO(topicEntity, List.of(new MessageDTO(messageEntity)));
     }
 
     @Transactional
@@ -70,6 +67,8 @@ public class TopicService {
         if (topic.getName().length() > 256) {
             throw new ValidationException("Topic name too long");
         }
+
+        // TODO: check user has access
         topicEntity.setName(topic.getName());
         topicRepo.updateById(topicEntity.getId(), topic.getName());
 
@@ -78,8 +77,8 @@ public class TopicService {
 
     public TopicDTO getById(String topicId) {
         TopicEntity topicEntity = this.getTopicEntityById(topicId);
-        List<PostEntity> postEntities = postService.getAllByTopicId(topicId);
-        return new TopicDTO(topicEntity, postEntities.stream().map(MessageDTO::new).toList());
+        List<MessageDTO> messageEntities = messageService.getAllMessagesByTopicId(UUID.fromString(topicId));
+        return new TopicDTO(topicEntity, messageEntities);
     }
 
     public TopicEntity getTopicEntityById(String topicId) {
@@ -98,18 +97,18 @@ public class TopicService {
 
     @Transactional
     public TopicDTO createMessage(String topicId, MessageDTO message) {
-        MessageEntity messageEntity = messageService.save(message.getText());
-        PersonEntity personEntity = personService.getPerson(message.getAuthor());
-        TopicEntity topicEntity = this.getTopicEntityById(topicId);
-        postService.savePost(topicEntity, messageEntity, personEntity);
+        TopicEntity topic = this.getTopicEntityById(topicId);
+        // TODO: get person by Spring HTTP Basic auth
+        PersonEntity person = personService.getPerson(message.getAuthor());
+        MessageEntity messageEntity = messageService.save(message.getText(), person, topic);
         return this.getById(topicId);
     }
 
-    @Transactional
     public TopicDTO updateMessage(String topicId, MessageDTO message) {
         if (message.getId() == null) {
             throw new InvalidIdSuppliedException("Message id is null");
         }
+        // TODO: check user has access
         messageService.updateMessage(message);
         return this.getById(topicId);
     }

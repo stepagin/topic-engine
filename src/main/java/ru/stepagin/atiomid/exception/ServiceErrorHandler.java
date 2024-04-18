@@ -40,6 +40,12 @@ public class ServiceErrorHandler {
         return ResponseEntity.internalServerError().body(e.getMessage());
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleException(final RuntimeException e) {
+        log.error("Runtime Exception: {}", e.getMessage());
+        return ResponseEntity.internalServerError().body(e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(final Exception e) {
         log.error("Common Exception: {}", e.getMessage());

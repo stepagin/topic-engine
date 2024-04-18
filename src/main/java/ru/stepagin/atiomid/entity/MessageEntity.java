@@ -8,14 +8,15 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
 @Table(name = "message")
 @Getter
 @Setter
-@RequiredArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class MessageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -26,5 +27,9 @@ public class MessageEntity {
     private String text;
     @CreationTimestamp
     @Column(name = "created", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private OffsetDateTime createdDate;
+    private OffsetDateTime createdDate = (OffsetDateTime.now(ZoneId.of("Europe/Moscow")));
+    @ManyToOne(optional = false)
+    private TopicEntity topic;
+    @ManyToOne(optional = false)
+    private PersonEntity person;
 }

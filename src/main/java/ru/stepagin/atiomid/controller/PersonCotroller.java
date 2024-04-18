@@ -10,13 +10,14 @@ import ru.stepagin.atiomid.service.PersonService;
 @Slf4j
 @RestController
 @CrossOrigin
-@RequestMapping("${app.api.prefix}/auth")
+@RequestMapping("${api.endpoint.base-url}/auth")
 public class PersonCotroller {
     @Autowired
     PersonService personService;
 
     @PostMapping("/register")
-    public ResponseEntity<PersonEntity> registrate(@RequestBody String name) {
+    public ResponseEntity<PersonEntity> register(@RequestBody String name) {
+        // TODO: create login and password
         return ResponseEntity.ok(personService.createPerson(name));
     }
 }

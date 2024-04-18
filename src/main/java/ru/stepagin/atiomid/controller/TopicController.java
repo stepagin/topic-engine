@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @CrossOrigin
-@RequestMapping("${app.api.prefix}/topic")
+@RequestMapping("${api.endpoint.base-url}/topic")
 public class TopicController {
     @Autowired
     private TopicService topicService;
@@ -37,7 +37,11 @@ public class TopicController {
     }
 
     @GetMapping("/{topicId}")
-    public ResponseEntity<TopicDTO> getAllMesages(@PathVariable("topicId") String topicId) {
+    public ResponseEntity<TopicDTO> getAllMesages(
+            @PathVariable("topicId") String topicId,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "20") int size
+    ) {
         return ResponseEntity.ok(topicService.getById(topicId));
     }
 
