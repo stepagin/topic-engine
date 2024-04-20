@@ -2,14 +2,14 @@ package ru.stepagin.atiomid.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.stepagin.atiomid.entity.TopicEntity;
 
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class TopicHeadDTO {
     private String id;
     private String name;

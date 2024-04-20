@@ -1,5 +1,6 @@
 package ru.stepagin.atiomid.DTO;
 
+import jakarta.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateTopicDTO {
-    private String id;
-    private String name;
-    private String created;
+    @Nonnull
+    private String id; // topic id
+    @Nonnull
+    private String name; // new topic name
 }

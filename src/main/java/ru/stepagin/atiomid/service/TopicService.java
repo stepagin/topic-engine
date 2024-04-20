@@ -8,15 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.stepagin.atiomid.DTO.*;
 import ru.stepagin.atiomid.entity.MessageEntity;
 import ru.stepagin.atiomid.entity.PersonEntity;
-import ru.stepagin.atiomid.entity.PostEntity;
 import ru.stepagin.atiomid.entity.TopicEntity;
 import ru.stepagin.atiomid.exception.InvalidIdSuppliedException;
 import ru.stepagin.atiomid.exception.TopicNotFoundException;
 import ru.stepagin.atiomid.exception.ValidationException;
 import ru.stepagin.atiomid.repository.TopicRepo;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,10 +21,6 @@ import java.util.UUID;
 public class TopicService {
     @Autowired
     private TopicRepo topicRepo;
-    @Autowired
-    private PersonService personService;
-    @Autowired
-    private PostService postService;
     @Autowired
     private MessageService messageService;
 
@@ -37,28 +30,27 @@ public class TopicService {
     }
 
     @Transactional
-    public TopicDTO createTopic(CreateTopicDTO createTopicDTO) {
-        PersonEntity personEntity = personService.getPerson(createTopicDTO.getMessage().getAuthor());
-        if (personEntity == null) {
+    public TopicDTO createTopic(CreateTopicDTO createTopicDTO, PersonEntity creator) {
+        if (creator == null) {
             throw new InvalidIdSuppliedException("Person not found");
         }
         if (createTopicDTO.getTopicName().length() < 2) {
-            throw new ValidationException("Topic name too short");
+            throw new ValidationException("Topic name is too short");
         }
         if (createTopicDTO.getTopicName().length() > 256) {
-            throw new ValidationException("Topic name too long");
+            throw new ValidationException("Topic name is too long");
         }
 
-        MessageEntity messageEntity = messageService.save(createTopicDTO.getMessage().getText());
-
-        TopicEntity topicEntity = new TopicEntity();
-        topicEntity.setName(createTopicDTO.getTopicName());
-        topicEntity.setCreatedDate(OffsetDateTime.now(ZoneId.of("Europe/Moscow")));
+        TopicEntity topicEntity = new TopicEntity(createTopicDTO.getTopicName(), creator);
         topicEntity = topicRepo.save(topicEntity);
 
-        postService.savePost(topicEntity, messageEntity, personEntity);
+        MessageEntity messageEntity = messageService.save(
+                createTopicDTO.getMessage().getText(),
+                creator,
+                topicEntity
+        );
 
-        return new TopicDTO(topicEntity, List.of(new MessageDTO(messageEntity, personEntity.getName())));
+        return new TopicDTO(topicEntity, List.of(new MessageDTO(messageEntity)));
     }
 
     @Transactional
@@ -70,26 +62,25 @@ public class TopicService {
         if (topic.getName().length() > 256) {
             throw new ValidationException("Topic name too long");
         }
+
         topicEntity.setName(topic.getName());
         topicRepo.updateById(topicEntity.getId(), topic.getName());
-
-        return new TopicDTO(topicEntity, messageService.getAllMessagesByTopicId(topicEntity.getId()));
+        List<MessageDTO> messages = messageService.getAllMessagesByTopicId(topicEntity.getId(), PageRequest.of(0, 20));
+        return new TopicDTO(topicEntity, messages);
     }
 
     public TopicDTO getById(String topicId) {
+        return this.getById(topicId, PageRequest.of(0, 20));
+    }
+
+    public TopicDTO getById(String topicId, PageRequest pageRequest) {
         TopicEntity topicEntity = this.getTopicEntityById(topicId);
-        List<PostEntity> postEntities = postService.getAllByTopicId(topicId);
-        return new TopicDTO(topicEntity, postEntities.stream().map(MessageDTO::new).toList());
+        List<MessageDTO> messages = messageService.getAllMessagesByTopicId(UUID.fromString(topicId), pageRequest);
+        return new TopicDTO(topicEntity, messages);
     }
 
     public TopicEntity getTopicEntityById(String topicId) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(topicId);
-        } catch (Exception e) {
-            throw new InvalidIdSuppliedException("Invalid topic id");
-        }
-        TopicEntity topicEntity = topicRepo.findById(uuid).orElse(null);
+        TopicEntity topicEntity = topicRepo.findById(UUID.fromString(topicId)).orElse(null);
         if (topicEntity == null) {
             throw new TopicNotFoundException("Topic not found");
         }
@@ -97,11 +88,9 @@ public class TopicService {
     }
 
     @Transactional
-    public TopicDTO createMessage(String topicId, MessageDTO message) {
-        MessageEntity messageEntity = messageService.save(message.getText());
-        PersonEntity personEntity = personService.getPerson(message.getAuthor());
-        TopicEntity topicEntity = this.getTopicEntityById(topicId);
-        postService.savePost(topicEntity, messageEntity, personEntity);
+    public TopicDTO createMessage(String topicId, MessageDTO message, PersonEntity person) {
+        TopicEntity topic = this.getTopicEntityById(topicId);
+        messageService.save(message.getText(), person, topic);
         return this.getById(topicId);
     }
 
@@ -110,7 +99,12 @@ public class TopicService {
         if (message.getId() == null) {
             throw new InvalidIdSuppliedException("Message id is null");
         }
-        messageService.updateMessage(message);
-        return this.getById(topicId);
+        TopicEntity topic = getTopicEntityById(topicId);
+        if (topic == null) {
+            throw new InvalidIdSuppliedException("Topic not found");
+        }
+        MessageDTO newMessage = messageService.updateMessage(message);
+        return new TopicDTO(topic, List.of(newMessage));
     }
+
 }
