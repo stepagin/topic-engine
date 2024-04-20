@@ -6,5 +6,4 @@ import ru.stepagin.atiomid.entity.PersonEntity;
 
 @Repository
 public interface PersonRepo extends JpaRepository<PersonEntity, String> {
-    boolean existsByName(String author);
 }

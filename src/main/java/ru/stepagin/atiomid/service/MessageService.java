@@ -1,6 +1,8 @@
 package ru.stepagin.atiomid.service;
 
+import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.stepagin.atiomid.DTO.MessageDTO;
@@ -19,39 +21,30 @@ public class MessageService {
     @Autowired
     private MessageRepo messageRepo;
 
-    public List<MessageDTO> getAllMessagesByTopicId(UUID topicId) {
-        List<MessageEntity> messageEntities = messageRepo.findAllByTopic(topicId);
+    public List<MessageDTO> getAllMessagesByTopicId(UUID topicId, PageRequest pageRequest) {
+        List<MessageEntity> messageEntities = messageRepo.findAllByTopicId(topicId, pageRequest);
         return messageEntities.stream().map(MessageDTO::new).toList();
     }
 
     @Transactional
-    public MessageEntity save(String message, PersonEntity person, TopicEntity topic) {
+    public MessageEntity save(@Nonnull String message, @Nonnull PersonEntity person, @Nonnull TopicEntity topic) {
         if (message.isEmpty()) {
             throw new ValidationException("Message text too short");
         }
-        // TODO: get person by Spring HTTP Basic auth
-        MessageEntity messageEntity = new MessageEntity();
-        messageEntity.setText(message);
-        messageEntity.setPerson(person);
-        messageEntity.setTopic(topic);
+        MessageEntity messageEntity = new MessageEntity(message, person, topic);
         return messageRepo.save(messageEntity);
     }
 
     @Transactional
-    public void updateMessage(MessageDTO message) {
-        // TODO: check user has access
+    public MessageDTO updateMessage(MessageDTO message) {
         MessageEntity messageEntity = this.getMessageEntityById(message.getId());
         messageRepo.updateTextById(messageEntity.getId(), message.getText());
+        messageEntity.setText(message.getText());
+        return new MessageDTO(messageEntity);
     }
 
     public MessageEntity getMessageEntityById(String id) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(id);
-        } catch (Exception e) {
-            throw new InvalidIdSuppliedException("Invalid message id");
-        }
-        MessageEntity messageEntity = messageRepo.findById(uuid).orElse(null);
+        MessageEntity messageEntity = messageRepo.findById(UUID.fromString(id)).orElse(null);
         if (messageEntity == null) {
             throw new InvalidIdSuppliedException("Invalid message id");
         }
@@ -59,12 +52,6 @@ public class MessageService {
     }
 
     public void deleteMessageById(String messageId) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(messageId);
-        } catch (Exception e) {
-            throw new InvalidIdSuppliedException("Invalid message id");
-        }
-        messageRepo.deleteById(uuid);
+        messageRepo.deleteById(UUID.fromString(messageId));
     }
 }

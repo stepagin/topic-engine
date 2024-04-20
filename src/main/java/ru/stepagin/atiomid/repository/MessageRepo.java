@@ -1,5 +1,6 @@
 package ru.stepagin.atiomid.repository;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +19,5 @@ public interface MessageRepo extends JpaRepository<MessageEntity, UUID> {
     @Query("update MessageEntity m set m.text=:text where m.id=:id")
     void updateTextById(@Param("id") UUID id, @Param("text") String text);
 
-    @Query("select m from MessageEntity m where m.topic.id=:id")
-    List<MessageEntity> findAllByTopic(@Param("id") UUID topicId);
+    List<MessageEntity> findAllByTopicId(UUID topicId, PageRequest pageRequest);
 }

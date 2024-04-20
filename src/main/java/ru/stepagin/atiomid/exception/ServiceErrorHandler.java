@@ -34,6 +34,12 @@ public class ServiceErrorHandler {
         return ResponseEntity.notFound().build();
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleException(final IllegalArgumentException e) {
+        log.error("IllegalArgumentException: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
     @ExceptionHandler(UnsupportedOperationException.class)
     public ResponseEntity<String> handleException(final UnsupportedOperationException e) {
         log.error("UnsupportedOperationException: {}", e.getMessage());
@@ -42,13 +48,13 @@ public class ServiceErrorHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleException(final RuntimeException e) {
-        log.error("Runtime Exception: {}", e.getMessage());
+        log.error("Runtime Exception ({}): {}", e.getClass(), e.getMessage());
         return ResponseEntity.internalServerError().body(e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(final Exception e) {
-        log.error("Common Exception: {}", e.getMessage());
+        log.error("Common Exception ({}): {}", e.getClass(), e.getMessage());
         return ResponseEntity.internalServerError().body(e.getMessage());
     }
 

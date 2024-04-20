@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class TopicDTO {
     private String id;
+    private String creator;
     private String topicName;
     private String created;
     private List<MessageDTO> messages;
@@ -21,6 +22,7 @@ public class TopicDTO {
     public TopicDTO(TopicEntity topicEntity, List<MessageDTO> messages) {
         this(
                 topicEntity.getId().toString(),
+                topicEntity.getCreator().getName(),
                 topicEntity.getName(),
                 topicEntity.getCreatedDate().toString(),
                 messages

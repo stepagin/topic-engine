@@ -13,5 +13,6 @@ import lombok.Setter;
 public class CreateTopicDTO {
     @Nonnull
     private String topicName;
+    @Nonnull
     private MessageDTO message;
 }

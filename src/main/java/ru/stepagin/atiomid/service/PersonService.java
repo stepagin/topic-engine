@@ -1,34 +1,32 @@
 package ru.stepagin.atiomid.service;
 
+import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.stepagin.atiomid.DTO.PersonDTO;
 import ru.stepagin.atiomid.entity.PersonEntity;
-import ru.stepagin.atiomid.exception.InvalidIdSuppliedException;
 import ru.stepagin.atiomid.repository.PersonRepo;
-
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 
 @Service
 public class PersonService {
     @Autowired
     private PersonRepo personRepo;
 
-    public PersonEntity createPerson(String name) {
-        if (personRepo.existsByName(name)) {
-            throw new InvalidIdSuppliedException("Person with name " + name + " already exists");
-        }
-        if (name.length() < 4) {
-            throw new InvalidIdSuppliedException("Name is too short");
-        }
-        PersonEntity p = new PersonEntity();
-        p.setName(name);
-        p.setCreatedDate(OffsetDateTime.now(ZoneId.of("Europe/Moscow")));
-        p = personRepo.save(p);
-        return p;
-    }
-
     public PersonEntity getPerson(String author) {
         return personRepo.findById(author).orElse(null);
+    }
+
+    public PersonDTO registerPerson(@Nonnull String name, @Nonnull String password) {
+        if (name.length() < 4) {
+            throw new IllegalArgumentException("Login must contain at least 4 characters");
+        } else if (password.length() < 6) {
+            throw new IllegalArgumentException("Password must contain at least 6 characters");
+        }
+        if (personRepo.existsById(name)) {
+            throw new IllegalArgumentException("User with name " + name + " already exists");
+        }
+        PersonEntity personEntity = new PersonEntity(name, password);
+        personRepo.save(personEntity);
+        return new PersonDTO(personEntity);
     }
 }

@@ -1,7 +1,6 @@
 package ru.stepagin.atiomid.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -16,7 +15,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @RequiredArgsConstructor
-@AllArgsConstructor
 public class TopicEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -27,8 +25,11 @@ public class TopicEntity {
     @CreationTimestamp
     @Column(name = "created", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime createdDate = (OffsetDateTime.now(ZoneId.of("Europe/Moscow")));
+    @ManyToOne(optional = false)
+    private PersonEntity creator;
 
-    public TopicEntity(String name) {
+    public TopicEntity(String name, PersonEntity creator) {
         this.name = name;
+        this.creator = creator;
     }
 }
