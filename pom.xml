@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ru.stepagin</groupId>
-    <artifactId>atiom-id</artifactId>
+    <artifactId>atom-id</artifactId>
     <version>0.1</version>
-    <name>atiom-id-test-task</name>
-    <description>atiom-id-test-task</description>
+    <name>atom-id-test-task</name>
+    <description>atom-id-test-task</description>
     <properties>
         <java.version>17</java.version>
     </properties>
